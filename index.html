@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Švajčiarsky Systém - Ping Pong</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dark-theme">
+    
+    <nav class="navbar dont-print">
+        <div class="logo">🏓 Turnaj v stolnom tenise Švajčiarskym spôsobom</div>
+        <div class="nav-actions">
+            <button id="themeToggle" class="btn btn-icon">🌓</button>
+        </div>
+    </nav>
+
+    <div class="app-container">
+        <!-- Dashboard / Tournament List -->
+        <section id="view-dashboard" class="view active dont-print">
+            <div class="view-header">
+                <h2>Moje Turnaje</h2>
+                <button id="btn-new-tour" class="btn btn-primary">+ Nový turnaj</button>
+            </div>
+            <div id="tournaments-list" class="grid-list">
+                <!-- Vygenerované turnaje -->
+            </div>
+        </section>
+
+        <!-- Tournament Details / Player Management -->
+        <section id="view-tour-setup" class="view dont-print">
+            <div class="breadcrumbs"><a href="#" data-nav="dashboard">← Späť</a></div>
+            <div class="view-header">
+                <h2 id="tour-setup-title">Nastavenie turnaja</h2>
+                <button id="btn-start-tour" class="btn btn-success">Zahájiť turnaj</button>
+            </div>
+            
+            <div class="setup-grid">
+                <div class="card panel">
+                    <h3>Pridať hráča</h3>
+                    <form id="add-player-form" class="form-group">
+                        <input type="text" id="player-name" placeholder="Meno hráča" required>
+                        <input type="number" id="player-seed" placeholder="Nasadenie / Body (voliteľné)" value="0">
+                        <button type="submit" class="btn btn-primary">Pridať</button>
+                    </form>
+                </div>
+                
+                <div class="card panel">
+                    <h3>Nastavenie turnaja</h3>
+                    <div style="margin-bottom: 0.5rem;">
+                        <label style="display:block; margin-bottom: 0.4rem; color:var(--c-text-muted); font-size:0.9em;">Maximálny počet kôl:</label>
+                        <input type="number" id="tour-max-rounds" min="1" max="20" style="width: 100%; max-width: 150px; padding: 0.4rem; border-radius: 4px; border: 1px solid var(--c-border); background: var(--c-bg); color: var(--c-text); font-size: 1em;">
+                        <div style="font-size:0.85em; color:var(--c-primary); margin-top: 0.5rem; font-weight: 500;" id="tour-rec-rounds">Odporúča sa: .. kôl</div>
+                        <p style="font-size:0.7em; color:var(--c-text-muted); margin-top: 0.5rem;">Pre čisté určenie víťaza vo Švajčiarskom systéme je matematicky vhodný vyššie odporúčaný logaritmický počet kôl vzhľadom k hráčom.</p>
+                    </div>
+                </div>
+
+                <div class="card panel" style="grid-column: 1 / -1;">
+                    <h3>Zoznam hráčov (<span id="player-count">0</span>)</h3>
+                    <ul id="setup-player-list" class="list-group">
+                        <!-- Zoznam hráčov -->
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Active Tournament Main View -->
+        <section id="view-tour-active" class="view dont-print">
+            <div class="breadcrumbs"><a href="#" data-nav="dashboard">← Späť na turnaje</a></div>
+            
+            <div class="tour-dashboard">
+                <div class="tour-header card">
+                    <h2 id="active-tour-title">Názov turnaja</h2>
+                    <div class="tour-controls">
+                        <button id="btn-standings" class="btn btn-secondary">Aktuálne poradie</button>
+                        <button id="btn-next-round" class="btn btn-primary">Pripraviť ďalšie kolo</button>
+                    </div>
+                </div>
+
+                <div class="rounds-container" id="rounds-container">
+                    <!-- Sem sa generujú UI kolá a ich zápasy -->
+                </div>
+            </div>
+        </section>
+        
+        <!-- Priebežné/Konečné Poradie -->
+        <section id="view-standings" class="view dont-print">
+            <div class="breadcrumbs"><a href="#" id="standings-back">← Späť do turnaja</a></div>
+            <div class="view-header">
+                <h2>Priebežné poradie</h2>
+                <button id="btn-print-standings" class="btn btn-secondary">🖨️ Tlačiť tabuľku</button>
+            </div>
+            <div class="card table-container">
+                <table class="standings-table">
+                    <thead>
+                        <tr>
+                            <th>Por.</th>
+                            <th>Hráč</th>
+                            <th>Body</th>
+                            <th>BH-C1</th>
+                            <th>Sety</th>
+                            <th>Lopty</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="standings-body">
+                        <!-- Generované z DB -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- Print View Container -->
+    <div id="print-container" class="print-only">
+        <!-- Generujú sa len scorecards na tlač -->
+    </div>
+
+    <!-- Modals -->
+    <div id="modal-overlay" class="modal-overlay dont-print"></div>
+    <div id="score-modal" class="modal dont-print">
+        <h3>Zadať výsledok</h3>
+        <p id="score-match-names" class="text-muted">Hráč A vs Hráč B</p>
+        
+        <div class="score-input-grid">
+            <div class="player-col A">
+                <h4 id="score-name-a">Hráč A</h4>
+                <div class="input-row"><label>Sety:</label><input type="number" id="input-sets-a" min="0" max="3"></div>
+                <div class="input-row"><label>Celkovo Kolo (body):</label><input type="number" id="input-points-a" min="0"></div>
+            </div>
+            <div class="player-col B">
+                <h4 id="score-name-b">Hráč B</h4>
+                <div class="input-row"><label>Sety:</label><input type="number" id="input-sets-b" min="0" max="3"></div>
+                <div class="input-row"><label>Celkovo Kolo (body):</label><input type="number" id="input-points-b" min="0"></div>
+            </div>
+        </div>
+        
+        <div class="modal-actions">
+            <button id="btn-score-cancel" class="btn btn-secondary">Zrušiť</button>
+            <button id="btn-score-save" class="btn btn-success">Uložiť výsledok</button>
+        </div>
+    </div>
+
+    <script src="js/db.js"></script>
+    <script src="js/swissEngine.js"></script>
+    <script src="js/pairingView.js"></script>
+    <script src="js/printLogic.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
