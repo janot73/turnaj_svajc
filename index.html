@@ -24,7 +24,11 @@
         <section id="view-dashboard" class="view active dont-print">
             <div class="view-header">
                 <h2>Moje Turnaje</h2>
-                <button id="btn-new-tour" class="btn btn-primary">+ Nový turnaj</button>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button id="btn-import-tour" class="btn btn-secondary">⬆️ Import turnaja</button>
+                    <input type="file" id="file-import-tour" accept=".json" style="display: none;">
+                    <button id="btn-new-tour" class="btn btn-primary">+ Nový turnaj</button>
+                </div>
             </div>
             <div id="tournaments-list" class="grid-list">
                 <!-- Vygenerované turnaje -->

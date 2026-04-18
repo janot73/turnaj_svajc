@@ -33,6 +33,33 @@ class App {
         });
 
         // Dashboard
+        const fileImport = document.getElementById('file-import-tour');
+        if (fileImport) {
+            document.getElementById('btn-import-tour').addEventListener('click', () => {
+                fileImport.click();
+            });
+            fileImport.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const data = JSON.parse(ev.target.result);
+                        if (this.db.importTournamentData(data)) {
+                            alert('Turnaj bol úspešne importovaný.');
+                            this.renderDashboard();
+                        } else {
+                            alert('Neplatný súbor s turnajom.');
+                        }
+                    } catch (err) {
+                        alert('Chyba pri čítaní súboru: ' + err.message);
+                    }
+                    fileImport.value = ''; // reset
+                };
+                reader.readAsText(file);
+            });
+        }
+
         document.getElementById('btn-new-tour').addEventListener('click', () => {
             const name = prompt('Názov turnaja:', 'Nový Turnaj ' + new Date().toLocaleDateString());
             if(name) {
@@ -113,12 +140,16 @@ class App {
              card.innerHTML = `
                 <h3>${tour.name}</h3>
                 <p class="text-muted">Stav: ${tour.state}</p>
-                <div style="margin-top: 1rem; display: flex; justify-content: space-between;">
-                    <button class="btn btn-primary btn-open">Otvoriť</button>
+                <div style="margin-top: 1rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                    <div>
+                        <button class="btn btn-primary btn-open">Otvoriť</button>
+                        <button class="btn btn-secondary btn-export badge" style="margin-left: 0.5rem;">Export</button>
+                    </div>
                     <button class="btn btn-danger btn-delete badge">Zmazať</button>
                 </div>
              `;
              card.querySelector('.btn-open').addEventListener('click', () => this.openTournament(tour.id));
+             card.querySelector('.btn-export').addEventListener('click', () => this.exportTournament(tour.id));
              card.querySelector('.btn-delete').addEventListener('click', () => {
                  if(confirm(`Naozaj chcete natrvalo zmazať turnaj "${tour.name}" a celú jeho históriu?`)) {
                      this.db.deleteTournament(tour.id);
@@ -128,6 +159,21 @@ class App {
              list.appendChild(card);
         });
         this.navigate('dashboard');
+    }
+
+    exportTournament(tourId) {
+        const data = this.db.exportTournamentData(tourId);
+        if (!data) return;
+        
+        const filename = `turnaj-${data.tournament.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`;
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
 
     openTournament(tourId) {

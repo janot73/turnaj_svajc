@@ -178,4 +178,53 @@ class DB {
         });
         this.save();
     }
+
+    // --- EXPORT / IMPORT ---
+    exportTournamentData(tourId) {
+        const tour = this.data.tournaments[tourId];
+        if (!tour) return null;
+        
+        const exportData = {
+            metadata: { version: 1, exportedAt: new Date().toISOString() },
+            tournament: tour,
+            players: {},
+            rounds: {},
+            matches: {}
+        };
+        
+        Object.keys(this.data.players).forEach(pid => {
+            if (this.data.players[pid].tour_id === tourId) {
+                exportData.players[pid] = this.data.players[pid];
+            }
+        });
+        
+        Object.keys(this.data.rounds).forEach(rid => {
+            const r = this.data.rounds[rid];
+            if (r.tour_id === tourId) {
+                exportData.rounds[rid] = r;
+                Object.keys(this.data.matches).forEach(mid => {
+                    const m = this.data.matches[mid];
+                    if (m.round_id === rid) {
+                        exportData.matches[mid] = m;
+                    }
+                });
+            }
+        });
+        
+        return exportData;
+    }
+
+    importTournamentData(exportData) {
+        if (!exportData || !exportData.tournament) return false;
+        
+        const tour = exportData.tournament;
+        this.data.tournaments[tour.id] = tour;
+        
+        if (exportData.players) Object.assign(this.data.players, exportData.players);
+        if (exportData.rounds) Object.assign(this.data.rounds, exportData.rounds);
+        if (exportData.matches) Object.assign(this.data.matches, exportData.matches);
+        
+        this.save();
+        return true;
+    }
 }
